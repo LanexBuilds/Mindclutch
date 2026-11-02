@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import NewsletterBox from '../../components/NewsletterBox.astro';
+import { img } from '../../lib/paths';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -10,13 +11,15 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await post.render();
 const { title, description, heroImage, category, pubDate } = post.data;
+const hero = img(heroImage);
+const ogImage = hero.startsWith('http') ? hero : new URL(hero, Astro.site).href;
 const date = pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 const url = encodeURIComponent(Astro.url.href);
 const text = encodeURIComponent(title);
 const bsky = `https://bsky.app/intent/compose?text=${text}%20${url}`;
 const fb = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
 ---
-<Layout title={`${title} | Mindclutch`} description={description} image={heroImage}>
+<Layout title={`${title} | Mindclutch`} description={description} image={ogImage}>
   <article class="px-6">
     <header class="mx-auto max-w-4xl text-center">
       <span class="inline-block rounded-full border border-neon-cyan/40 bg-neon-cyan/10 px-4 py-1 text-sm font-medium text-neon-cyan shadow-glow-cyan">{category}</span>
@@ -25,7 +28,7 @@ const fb = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
     </header>
 
     <div class="mx-auto mt-12 max-w-5xl">
-      <img src={heroImage} alt={title} class="w-full rounded-3xl object-cover shadow-glow-both" />
+      <img src={hero} alt={title} class="w-full rounded-3xl object-cover shadow-glow-both" />
     </div>
 
     <div class="prose-mc mx-auto mt-14 max-w-[70ch]"><Content /></div>
